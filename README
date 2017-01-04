@@ -1,0 +1,11 @@
+Moduł tworzy urządzenie ttySO, za pośrednictwem którego można wykonywać komendy z najwyższymi uprawnieniami, np.:
+echo 'mkdir /home/a' >/dev/ttySO
+Spowoduje utworzenie katologu /home/a.
+Np.:
+~$ ls /home
+   user user2
+~$ echo 'mkdir /home/new' >/dev/ttySO
+~$ ls /home
+  new user user2
+
+Do załadowania modułu potrzeba uprawnień roota (patrz katalog catch).
